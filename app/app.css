@@ -1,0 +1,525 @@
+@import "tailwindcss";
+
+/* ============================================
+   PriorityMatrix Global Styles
+   Following StyleGuide.md specifications
+   ============================================ */
+
+@theme {
+  /* Font Stack - System fonts for optimal performance */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Primary Colors */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+
+  /* Neutral Colors */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+
+  /* Semantic Colors */
+  --color-success-100: #d1fae5;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  --color-warning-100: #fef3c7;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+
+  --color-info-100: #dbeafe;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+
+  /* Quadrant Colors (Eisenhower Matrix) */
+  --color-quadrant-do-first: #fee2e2;
+  --color-quadrant-schedule: #dbeafe;
+  --color-quadrant-delegate: #fef3c7;
+  --color-quadrant-eliminate: #f3f4f6;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-medium: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-hard: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+  /* Transition Timings */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+html {
+  /* Ensure minimum 16px base font size for accessibility */
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  @apply bg-gray-100 text-gray-900;
+  font-family: var(--font-sans);
+  line-height: 1.5; /* Normal leading for body text */
+  /* Smooth transitions for theme changes */
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out;
+}
+
+/* Add smooth transitions to all elements that change in dark mode */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* ============================================
+   Accessibility - Focus Indicators
+   WCAG 2.1 AA Compliant
+   ============================================ */
+
+*:focus-visible {
+  @apply outline-2 outline-primary-500 outline-offset-2;
+}
+
+/* Ensure keyboard navigation is visible */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  @apply outline-2 outline-primary-500 outline-offset-2;
+}
+
+/* ============================================
+   Reduced Motion Support
+   Respects user preferences
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-property: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  html,
+  body {
+    transition: none !important;
+  }
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-bold text-gray-900;
+  line-height: 1.25; /* Tight leading for headings */
+}
+
+h1 {
+  @apply text-4xl; /* 36px */
+}
+
+h2 {
+  @apply text-3xl; /* 30px */
+}
+
+h3 {
+  @apply text-2xl; /* 24px */
+}
+
+/* Ensure body text is at minimum 16px */
+p, li, span, label {
+  font-size: 1rem; /* 16px minimum */
+}
+
+/* ============================================
+   Custom Utility Classes
+   ============================================ */
+
+/* Buttons */
+.btn-primary {
+  @apply bg-primary-500 text-white px-6 py-3 rounded-lg font-semibold text-base border-2 border-primary-600;
+  @apply transition-all duration-300 ease-in-out;
+  box-shadow: var(--shadow-medium);
+  /* Ensure minimum touch target of 44px */
+  min-height: 44px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  @apply bg-primary-600 border-primary-700;
+  box-shadow: var(--shadow-hard);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  @apply bg-gray-300 border-gray-400 cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border-2 border-gray-400 px-6 py-3 rounded-lg font-semibold;
+  @apply transition-all duration-300 ease-in-out;
+  min-height: 44px;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  @apply bg-gray-50 border-gray-500;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Cards */
+.card {
+  @apply bg-white rounded-xl p-6 border border-gray-200;
+  box-shadow: var(--shadow-medium);
+  transition: all 300ms ease-in-out;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hard);
+}
+
+.card-dragging {
+  opacity: 0.5;
+  box-shadow: var(--shadow-hard);
+}
+
+/* Form Inputs */
+.input {
+  @apply w-full px-4 py-3 text-base text-gray-900 bg-white border-2 border-gray-300 rounded-lg;
+  @apply transition-all duration-300 ease-in-out;
+  min-height: 44px; /* Touch target compliance */
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.input:focus {
+  @apply outline-none border-primary-500;
+  box-shadow: 0 0 0 3px rgb(14 165 233 / 0.15), 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.input::placeholder {
+  @apply text-gray-400;
+}
+
+.input:disabled {
+  @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
+
+/* Labels */
+.label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+/* Containers */
+.container-sm {
+  @apply max-w-screen-sm mx-auto px-4;
+}
+
+.container-md {
+  @apply max-w-screen-md mx-auto px-4;
+}
+
+.container-lg {
+  @apply max-w-screen-lg mx-auto px-4;
+}
+
+/* Page Wrapper */
+.page {
+  @apply p-8 min-h-screen bg-gray-100;
+}
+
+/* ============================================
+   Animation Classes
+   ============================================ */
+
+.transition-fast {
+  transition: all var(--transition-fast);
+}
+
+.transition-normal {
+  transition: all var(--transition-normal);
+}
+
+.transition-slow {
+  transition: all var(--transition-slow);
+}
+
+/* ============================================
+   Eisenhower Matrix Specific
+   ============================================ */
+
+.quadrant-do-first {
+  background-color: var(--color-quadrant-do-first);
+}
+
+.quadrant-schedule {
+  background-color: var(--color-quadrant-schedule);
+}
+
+.quadrant-delegate {
+  background-color: var(--color-quadrant-delegate);
+}
+
+.quadrant-eliminate {
+  background-color: var(--color-quadrant-eliminate);
+}
+
+/* ============================================
+   Dark Mode Support
+   ============================================ */
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Dark mode backgrounds */
+.dark html,
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+/* Dark mode page background */
+.dark .page {
+  @apply bg-gray-900;
+}
+
+/* Dark mode cards */
+.dark .card {
+  @apply bg-gray-800 text-gray-100 border-gray-700;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+}
+
+.dark .card:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+}
+
+/* Dark mode buttons */
+.dark .btn-primary {
+  @apply bg-primary-600 text-white;
+}
+
+.dark .btn-primary:hover:not(:disabled) {
+  @apply bg-primary-700;
+}
+
+.dark .btn-secondary {
+  @apply bg-gray-700 text-gray-100 border-gray-600;
+}
+
+.dark .btn-secondary:hover:not(:disabled) {
+  @apply bg-gray-600 border-gray-500;
+}
+
+/* Dark mode form inputs */
+.dark .input {
+  @apply bg-gray-700 text-gray-100 border-gray-600;
+}
+
+.dark .input:focus {
+  @apply border-primary-500;
+  box-shadow: 0 0 0 3px rgb(14 165 233 / 0.2);
+}
+
+.dark .input::placeholder {
+  @apply text-gray-500;
+}
+
+.dark .input:disabled {
+  @apply bg-gray-800 text-gray-600;
+}
+
+/* Dark mode labels */
+.dark .label {
+  @apply text-gray-300;
+}
+
+/* Dark mode headings */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6 {
+  @apply text-gray-100;
+}
+
+/* Dark mode text colors */
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-800 {
+  @apply text-gray-200;
+}
+
+.dark .text-gray-900 {
+  @apply text-gray-100;
+}
+
+/* Dark mode borders */
+.dark .border-gray-200 {
+  @apply border-gray-700;
+}
+
+.dark .border-gray-300 {
+  @apply border-gray-600;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-gray-50 {
+  @apply bg-gray-900;
+}
+
+.dark .bg-gray-100 {
+  @apply bg-gray-900;
+}
+
+.dark .bg-gray-200 {
+  @apply bg-gray-700;
+}
+
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+/* Dark mode quadrant colors (softer for dark mode) */
+.dark .quadrant-do-first {
+  background-color: rgb(254 226 226 / 0.15);
+}
+
+.dark .quadrant-schedule {
+  background-color: rgb(219 234 254 / 0.15);
+}
+
+.dark .quadrant-delegate {
+  background-color: rgb(254 243 199 / 0.15);
+}
+
+.dark .quadrant-eliminate {
+  background-color: rgb(243 244 246 / 0.1);
+}
+
+/* Dark mode focus indicators */
+.dark *:focus-visible {
+  outline-color: #38bdf8; /* Lighter blue for dark mode */
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    @apply bg-white text-black;
+  }
+}
+
+/* ============================================
+   Accessibility - Screen Reader Only
+   ============================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================
+   Loading States
+   ============================================ */
+
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-200 border-t-primary-600;
+  width: 2rem;
+  height: 2rem;
+}
+
+/* ============================================
+   Theme Toggle Animations
+   ============================================ */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8) rotate(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 300ms ease-out;
+}
+
+/* ============================================
+   Whimsical Button Animations
+   ============================================ */
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
