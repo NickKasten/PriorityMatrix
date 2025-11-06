@@ -7,10 +7,15 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
+    base: env.VITE_APP_BASE_PATH || '/',
     plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
     define: {
-      'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL),
-      'process.env.SUPABASE_ANON_KEY': JSON.stringify(env.SUPABASE_ANON_KEY),
+      'process.env.SUPABASE_URL': JSON.stringify(
+        env.VITE_SUPABASE_URL || env.SUPABASE_URL || ''
+      ),
+      'process.env.SUPABASE_ANON_KEY': JSON.stringify(
+        env.VITE_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY || ''
+      ),
     },
   };
 });

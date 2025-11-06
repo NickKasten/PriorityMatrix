@@ -6,7 +6,9 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "test:e2e": "npm run build -- --mode test && playwright test",
+    "test:e2e:headed": "npm run build -- --mode test && playwright test --headed --project=chromium"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -22,11 +24,13 @@
     "react-router": "^7.9.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.42.1",
     "@react-router/dev": "^7.9.2",
     "@tailwindcss/vite": "^4.1.13",
     "@types/node": "^22",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
+    "serve": "^14.2.1",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
     "vite": "^7.1.7",

@@ -15,6 +15,8 @@ PriorityMatrix helps you organize tasks using the Eisenhower Matrix framework, c
 - 📅 Due date tracking
 - ✅ Task status management (To Do, Scheduled, Completed)
 - 🎨 Clean, accessible UI with Tailwind CSS
+- 🔐 Email magic-link authentication with secure per-user data isolation
+- 🚦 Usage guardrails: 1 task/sec inserts, 30 active task cap, 100-user tenant limit
 
 ## 🏗️ Tech Stack
 
@@ -24,7 +26,7 @@ PriorityMatrix helps you organize tasks using the Eisenhower Matrix framework, c
 - **Styling**: Tailwind CSS
 - **Drag & Drop**: [@dnd-kit](https://dndkit.com/)
 - **Date Utilities**: date-fns
-- **Hosting**: Vercel (recommended)
+- **Hosting**: GitHub Pages (static SPA) or Vercel
 
 ## 🚀 Quick Start
 
@@ -50,11 +52,15 @@ PriorityMatrix helps you organize tasks using the Eisenhower Matrix framework, c
 
    Create a `.env` file in the root directory:
    ```env
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   # Optional when hosting under a repo path on GitHub Pages
+   VITE_APP_BASE_PATH=/PriorityMatrix
    ```
 
-4. **Database setup is already complete** (schema has been applied)
+4. **Apply Supabase security hardening**
+
+   Run the SQL in [`supabase/migrations/20250215_gh_pages_auth_limits.sql`](supabase/migrations/20250215_gh_pages_auth_limits.sql) against your project (SQL editor or `supabase db push`). This adds authentication caps, per-user policies, and rate limiting triggers.
 
 5. **Start the development server**
    ```bash
@@ -84,6 +90,13 @@ The matrix creates four quadrants:
 - **DELEGATE** (Low Importance, High Urgency) - Urgent but not important
 - **ELIMINATE** (Low Importance, Low Urgency) - Consider removing
 
+### Authentication & Safety
+
+- Magic-link email login powered by Supabase Auth (no passwords to store)
+- Hard cap of 100 active user accounts with a dedicated capacity notification page
+- Server-enforced limits of 30 active (non-completed) tasks per user
+- Rate limiting: one task creation per user per second to protect the database
+
 ### Task Management
 
 - **Priority Sorting**: "To Do" column automatically sorts by calculated priority
@@ -103,10 +116,10 @@ npm run dev          # Start dev server with HMR
 npm run build        # Build for production
 npm run preview      # Preview production build
 
-# Testing (when configured)
-npm run test         # Run tests
-npm run test:watch   # Watch mode
-npm run test:coverage # With coverage report
+# Testing
+npm run typecheck    # Static type checking
+npm run test:e2e     # Headless Playwright suite
+npm run test:e2e:headed # Debug E2E runs in headed Chromium
 ```
 
 ### Project Structure
@@ -117,15 +130,18 @@ PriorityMatrix/
 │   ├── components/         # React components
 │   │   ├── ImportanceUrgencyGraph.tsx
 │   │   ├── TaskCard.tsx
-│   │   └── TodoColumn.tsx
-│   ├── lib/               # Utility functions
-│   │   ├── supabase.server.ts
+│   │   ├── TodoColumn.tsx
+│   │   └── AccountMenu.tsx
+│   ├── lib/               # Utility & auth helpers
+│   │   ├── auth-context.tsx
+│   │   ├── supabase.client.ts
 │   │   └── utils.ts
 │   ├── routes/            # Route components
 │   │   ├── _index.tsx
 │   │   ├── add-todo.tsx
 │   │   ├── add-todo.position.tsx
-│   │   ├── add-todo.saving.tsx
+│   │   ├── auth.callback.tsx
+│   │   ├── capacity.tsx
 │   │   └── todos.tsx
 │   ├── types/             # TypeScript types
 │   │   └── todo.ts
@@ -133,7 +149,12 @@ PriorityMatrix/
 ├── docs/                  # Documentation
 │   ├── PROJECT_STATUS.md
 │   └── StyleGuide.md
-├── public/                # Static assets
+├── public/
+│   ├── 404.html           # SPA redirect helper for GitHub Pages
+│   └── favicon.ico
+├── supabase/
+│   └── migrations/
+│       └── 20250215_gh_pages_auth_limits.sql
 └── .env                   # Environment variables (not committed)
 ```
 
@@ -145,6 +166,7 @@ The `todos` table structure:
 create table todos (
   id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   title text not null,
   due_date date,
   importance integer not null check (importance >= 0 and importance <= 100),
@@ -156,6 +178,18 @@ create table todos (
 ```
 
 ## 🚢 Deployment
+
+### GitHub Pages (Static)
+
+1. **Add repository secrets** (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+2. **Apply the Supabase migration script** (`supabase/migrations/20250215_gh_pages_auth_limits.sql`) to enable RLS and limits.
+3. **Push to `main`** or run the workflow manually. The pipeline in [`.github/workflows/deploy-gh-pages.yml`](.github/workflows/deploy-gh-pages.yml):
+   - Installs dependencies and builds with `VITE_APP_BASE_PATH=/<repo>`. 
+   - Uploads `build/client` as the artifact.
+   - Publishes via `actions/deploy-pages@v4`.
+4. **Configure Pages**: set the repository Pages source to “GitHub Actions” on first deploy.
+
+> ℹ️ For local smoke-tests run `npm run build -- --mode production` and serve `build/client` with any static server (`npx serve build/client --single`).
 
 ### Vercel (Recommended)
 
@@ -170,8 +204,8 @@ create table todos (
    ```
 
 3. **Add environment variables** in the Vercel dashboard:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
 
 ### Docker Deployment
 

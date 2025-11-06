@@ -1,19 +1,19 @@
-import { useDraggable } from '@dnd-kit/core';
-import { format, parseISO } from 'date-fns';
-import { useFetcher } from 'react-router';
-import { useState } from 'react';
-import type { Todo } from '~/types/todo';
+import { useDraggable } from "@dnd-kit/core";
+import { format, parseISO } from "date-fns";
+import { useState, type MouseEvent } from "react";
+import type { Todo } from "~/types/todo";
 
 interface TaskCardProps {
   task: Todo;
+  onDelete(taskId: string): Promise<void>;
 }
 
-export function TaskCard({ task }: TaskCardProps) {
-  const fetcher = useFetcher();
+export function TaskCard({ task, onDelete }: TaskCardProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: task.id,
+    });
 
   const style = transform
     ? {
@@ -22,16 +22,13 @@ export function TaskCard({ task }: TaskCardProps) {
       }
     : undefined;
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    fetcher.submit(
-      { taskId: task.id, action: 'delete' },
-      { method: 'post', action: '/todos' }
-    );
+  const confirmDelete = async () => {
+    await onDelete(task.id);
     setShowDeleteModal(false);
   };
 
@@ -47,7 +44,9 @@ export function TaskCard({ task }: TaskCardProps) {
         className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-shadow relative group"
       >
         <div {...listeners} {...attributes} className="cursor-move">
-          <h3 className="font-semibold mb-2 pr-6 text-gray-800 dark:text-gray-100">{task.title}</h3>
+          <h3 className="font-semibold mb-2 pr-6 text-gray-800 dark:text-gray-100">
+            {task.title}
+          </h3>
 
           <div className="flex gap-2 text-xs text-gray-600 mb-2">
             <span className="bg-blue-100 dark:bg-blue-900 dark:text-blue-100 px-2 py-1 rounded">
@@ -60,7 +59,7 @@ export function TaskCard({ task }: TaskCardProps) {
 
           {task.due_date && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Due: {format(parseISO(task.due_date), 'MMM d, yyyy')}
+              Due: {format(parseISO(task.due_date), "MMM d, yyyy")}
             </p>
           )}
         </div>

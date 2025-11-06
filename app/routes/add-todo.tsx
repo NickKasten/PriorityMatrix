@@ -1,18 +1,43 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router';
-import type { FormEvent } from 'react';
+import { useState } from "react";
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
+import type { FormEvent } from "react";
+import { useAuth } from "~/lib/auth-context";
 
 export default function AddTodo() {
+  const { user, initializing } = useAuth();
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  if (initializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    const redirectTarget =
+      searchParams.get("redirect") ??
+      `${location.pathname}${location.search}${location.hash}`;
+    return <Navigate to={`/login?redirect=${encodeURIComponent(redirectTarget)}`} replace />;
+  }
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
     if (!title.trim()) return;
 
-    navigate('/add-todo/position', {
-      state: { title: title.trim(), dueDate }
+    navigate("/add-todo/position", {
+      state: { title: title.trim(), dueDate },
     });
   };
 
