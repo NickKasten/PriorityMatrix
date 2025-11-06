@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <script>
+      (function () {
+        var l = window.location;
+        var segments = l.pathname.split("/").filter(Boolean);
+        var pathSegmentsToKeep = segments.length > 1 ? 1 : 0;
+
+        var repoPrefix = segments.slice(0, pathSegmentsToKeep).join("/");
+        var target =
+          l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          (repoPrefix ? "/" + repoPrefix : "") +
+          "/?redirect=/" +
+          segments.slice(pathSegmentsToKeep).join("/") +
+          (l.search ? l.search.replace("?", "&") : "") +
+          l.hash;
+
+        sessionStorage.setItem("gh-pages-redirect", l.pathname + l.search + l.hash);
+        l.replace(target);
+      })();
+    </script>
+  </head>
+  <body>
+    Redirecting…
+  </body>
+</html>

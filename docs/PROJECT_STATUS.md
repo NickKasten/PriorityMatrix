@@ -1,134 +1,53 @@
-# PriorityMatrix - Project Status
+# PriorityMatrix – Project Status (GitHub Pages Branch)
 
-## ✅ Completed Tasks
+## ✅ Completed Work
 
-### 1. Project Setup
-- ✅ React Router (Remix v2 successor) project initialized
-- ✅ Dependencies installed:
-  - @supabase/supabase-js
-  - @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities
-  - date-fns
-- ✅ Environment variables configured (.env)
+### Platform & Tooling
+- React Router v7 configured for SPA builds (SSR disabled) with Tailwind CSS styling.
+- Vite environment now driven by `VITE_*` variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, optional `VITE_APP_BASE_PATH`).
+- GitHub Pages compatible assets: `public/404.html` redirect helper and base path handling in `vite.config.ts`.
 
-### 2. Database Setup
-- ✅ Supabase project: PriorityMatrix (ID: elmuoaaqzwbrmxhfhhlh)
-- ✅ Database schema created:
-  - `todos` table with all required fields
-  - Index on status and position
-- ✅ Project is ACTIVE_HEALTHY
+### Authentication & User Safety
+- Email magic-link flow (`/login`, `/auth/callback`) with a global `AuthProvider` and account menu.
+- Capacity guard page (`/capacity`) triggered when the tenant exceeds 100 active users.
+- Supabase migration script (`supabase/migrations/20250215_gh_pages_auth_limits.sql`) creating:
+  - `user_profiles` table to track active accounts.
+  - Functions `check_user_capacity` and `ensure_user_slot` for pre-check and enforcement.
+  - `handle_todo_insert` trigger enforcing 30 active tasks per user and a 1 task/sec insert rate.
+  - Updated RLS policies so users only access their own tasks and profile entry.
 
-### 3. Application Files Created
+### Application Routes & Components
+- `_index.tsx` updated with auth-aware landing experience.
+- `login.tsx`, `auth.callback.tsx`, and `capacity.tsx` power the auth flow.
+- `add-todo.tsx` and `add-todo.position.tsx` now run completely client-side with Supabase inserts and limit messaging.
+- `todos.tsx` fetches and mutates data via the browser Supabase client with optimistic drag-and-drop updates.
+- UI enhancements: `AccountMenu` (sign-in/out, quick links) and `ThemeToggle` pinned in the layout.
 
-#### Library Files
-- ✅ `app/lib/supabase.server.ts` - Supabase client configuration
-- ✅ `app/lib/utils.ts` - Priority calculation and sorting utilities
-- ✅ `app/types/todo.ts` - TypeScript interfaces
+### Data Layer Utilities
+- `app/lib/supabase.client.ts` – browser Supabase singleton.
+- `app/lib/auth-context.tsx` – session management + capacity awareness.
+- `app/lib/utils.ts` – priority calculations remain shared across the UI.
+- `app/types/todo.ts` augmented with `user_id`.
 
-#### Routes
-- ✅ `app/routes/_index.tsx` - Home screen with navigation buttons
-- ✅ `app/routes/add-todo.tsx` - Task input form
-- ✅ `app/routes/add-todo.position.tsx` - Eisenhower Matrix positioning
-- ✅ `app/routes/add-todo.saving.tsx` - Loading animation
-- ✅ `app/routes/todos.tsx` - Task list with drag & drop
+## 🚧 In Progress / Next Steps
+- Author Playwright end-to-end tests covering auth, task CRUD, drag & drop, rate limit messaging, and capacity edge cases.
+- Configure GitHub Actions workflow for automated GH Pages deployments.
+- Document CI set-up and testing workflows in README (partially updated; final copy pending CI work).
 
-#### Components
-- ✅ `app/components/ImportanceUrgencyGraph.tsx` - Interactive Eisenhower Matrix
-- ✅ `app/components/TaskCard.tsx` - Draggable task card
-- ✅ `app/components/TodoColumn.tsx` - Droppable task column
+## 🧪 Testing Status
+- `npm run typecheck` passes (runs `react-router typegen` + `tsc`).
+- End-to-end tests not yet implemented; Playwright scaffolding is planned in this branch.
 
-### 4. Build & Development
-- ✅ Build successful (no errors)
-- ✅ Development server running on http://localhost:5173/
+## 🌐 Deployment Notes
+- GitHub Pages: use SPA build output (`npm run build`) and the upcoming GitHub Actions workflow to push `build/client`.
+- Vercel remains an optional host; update environment variables to `VITE_` names if deploying there.
+- Supabase SQL script must be applied before inviting users to ensure RLS, rate limiting, and capacity controls are active.
 
-## 📝 Application Features
-
-### Implemented
-1. **Home Screen** - Navigation to todo list or add new task
-2. **Add Todo Flow**:
-   - Input task title and due date
-   - Position task on Eisenhower Matrix (Importance vs Urgency)
-   - Toggle to show/hide existing tasks
-   - Loading animation on save
-3. **Task Management**:
-   - Three columns: To Do, Scheduled, Completed
-   - Drag & drop between columns
-   - Priority-based sorting in "To Do" column
-   - Task cards show importance, urgency, and due date
-
-### Eisenhower Matrix Quadrants
-- **DO FIRST** (High Importance, High Urgency)
-- **SCHEDULE** (High Importance, Low Urgency)
-- **DELEGATE** (Low Importance, High Urgency)
-- **ELIMINATE** (Low Importance, Low Urgency)
-
-## 🚀 Next Steps
-
-### Testing (Recommended)
-- [ ] Test home page navigation
-- [ ] Test adding a new todo
-- [ ] Test positioning on Eisenhower Matrix
-- [ ] Test viewing existing tasks on graph
-- [ ] Test drag and drop functionality
-- [ ] Test priority sorting
-- [ ] Verify due date display
-
-### Optional Enhancements
-- [ ] Add task editing functionality
-- [ ] Add task deletion
-- [ ] Add filters and search
-- [ ] Add user authentication
-- [ ] Deploy to Vercel
-
-## 🔧 Development Commands
-
-```bash
-# Start dev server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## 🌐 Deployment
-
-### Vercel (Recommended)
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel
-
-# Add environment variables in Vercel dashboard:
-# - SUPABASE_URL
-# - SUPABASE_ANON_KEY
-```
-
-## 📊 Database Schema
-
-```sql
-create table todos (
-  id uuid default gen_random_uuid() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  title text not null,
-  due_date date,
-  importance integer not null check (importance >= 0 and importance <= 100),
-  urgency integer not null check (urgency >= 0 and urgency <= 100),
-  status text not null default 'todo' check (status in ('todo', 'scheduled', 'completed')),
-  position integer not null default 0,
-  completed_at timestamp with time zone
-);
-```
-
-## 🔗 Links
-
-- **Dev Server**: http://localhost:5173/
-- **Supabase URL**: https://elmuoaaqzwbrmxhfhhlh.supabase.co
-- **Database**: db.elmuoaaqzwbrmxhfhhlh.supabase.co
-
----
-
-**Status**: ✅ All core features implemented and ready for testing!
+## 📊 Database Changes Summary
+- `todos.user_id` (uuid) with trigger-assigned value of `auth.uid()` plus rate limiting checks.
+- `user_profiles` (id, email, created_at) gating user capacity.
+- Supporting functions/triggers:
+  - `check_user_capacity(email)` – returns `{ capacity_reached, is_existing_user, allow_signup }`.
+  - `ensure_user_slot(user_uuid, user_email)` – inserts profile or raises `USER_CAPACITY_REACHED`.
+  - `handle_todo_insert()` – enforces 30 active tasks and 1 insert/second per user.
+- Updated policies restrict all `todos` CRUD to the owning user and secure the profile table.

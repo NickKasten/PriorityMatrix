@@ -1,14 +1,15 @@
-import { useDroppable } from '@dnd-kit/core';
-import { TaskCard } from './TaskCard';
-import type { Todo } from '~/types/todo';
+import { useDroppable } from "@dnd-kit/core";
+import { TaskCard } from "./TaskCard";
+import type { Todo } from "~/types/todo";
 
 interface TodoColumnProps {
   id: string;
   title: string;
   tasks: Todo[];
+  onDelete(taskId: string): Promise<void>;
 }
 
-export function TodoColumn({ id, title, tasks }: TodoColumnProps) {
+export function TodoColumn({ id, title, tasks, onDelete }: TodoColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   // Column-specific colors
@@ -42,18 +43,20 @@ export function TodoColumn({ id, title, tasks }: TodoColumnProps) {
     <div
       ref={setNodeRef}
       className={`${colors.bg} ${colors.border} border-2 rounded-xl p-6 min-h-[400px] shadow-md transition-all ${
-        isOver ? `${colors.hoverBg} ring-2 ${colors.ring}` : ''
+        isOver ? `${colors.hoverBg} ring-2 ${colors.ring}` : ""
       }`}
     >
       <div className={`${colors.header} rounded-lg px-4 py-3 mb-4 shadow-sm`}>
         <h2 className="text-xl font-bold flex items-center justify-between">
           {title}
-          <span className="text-sm font-semibold opacity-75">({tasks.length})</span>
+          <span className="text-sm font-semibold opacity-75">
+            ({tasks.length})
+          </span>
         </h2>
       </div>
       <div className="space-y-3">
-        {tasks.map(task => (
-          <TaskCard key={task.id} task={task} />
+        {tasks.map((task) => (
+          <TaskCard key={task.id} task={task} onDelete={onDelete} />
         ))}
       </div>
     </div>
