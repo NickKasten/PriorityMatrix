@@ -61,9 +61,9 @@ export default function App() {
 }
 
 function LoadingOverlay() {
-  const { initializing, signingOut } = useAuth();
+  const { initializing, signingOut, transitioning } = useAuth();
 
-  if (!initializing && !signingOut) {
+  if (!initializing && !signingOut && !transitioning) {
     return null;
   }
 

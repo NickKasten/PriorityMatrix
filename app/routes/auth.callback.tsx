@@ -5,11 +5,11 @@ import { useAuth } from "~/lib/auth-context";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { markCapacityReached, signingOut } = useAuth();
+  const { markCapacityReached, signingOut, transitioning } = useAuth();
   const [status, setStatus] = useState("Verifying your magic link…");
 
-  // Don't process callback during sign out
-  if (signingOut) {
+  // Don't process callback during sign out or transitions
+  if (signingOut || transitioning) {
     return null;
   }
 

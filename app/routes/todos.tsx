@@ -11,7 +11,7 @@ import { useAuth } from "~/lib/auth-context";
 type TaskStatus = "todo" | "scheduled" | "completed";
 
 export default function Todos() {
-  const { user, initializing, signingOut } = useAuth();
+  const { user, initializing, signingOut, transitioning } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,12 +35,12 @@ export default function Todos() {
   }, []);
 
   useEffect(() => {
-    if (!initializing && !signingOut && user) {
+    if (!initializing && !signingOut && !transitioning && user) {
       void fetchTodos();
-    } else if (!initializing && !signingOut && !user) {
+    } else if (!initializing && !signingOut && !transitioning && !user) {
       setLoading(false);
     }
-  }, [fetchTodos, initializing, signingOut, user]);
+  }, [fetchTodos, initializing, signingOut, transitioning, user]);
 
   const categorized = useMemo(() => {
     const todo = todos
@@ -115,7 +115,7 @@ export default function Todos() {
   };
 
   // Let global LoadingOverlay handle auth transitions
-  if (initializing || signingOut) {
+  if (initializing || signingOut || transitioning) {
     return null;
   }
 

@@ -2,10 +2,10 @@ import { Link } from "react-router";
 import { useAuth } from "~/lib/auth-context";
 
 export default function Index() {
-  const { user, initializing, signingOut } = useAuth();
+  const { user, initializing, signingOut, transitioning } = useAuth();
 
   // Let global LoadingOverlay handle auth transitions
-  if (initializing || signingOut) {
+  if (initializing || signingOut || transitioning) {
     return null;
   }
 

@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth-context";
 
 export function AccountMenu() {
-  const { user, initializing, signingOut, signOut } = useAuth();
+  const { user, initializing, signingOut, transitioning, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
   // Hide during auth transitions to prevent flashing
-  if (initializing || signingOut) {
+  if (initializing || signingOut || transitioning) {
     return null;
   }
 

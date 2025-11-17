@@ -14,6 +14,7 @@ interface AuthContextValue {
   session: Session | null;
   initializing: boolean;
   signingOut: boolean;
+  transitioning: boolean;
   capacityReached: boolean;
   markCapacityReached(): void;
   signOut(): Promise<void>;
@@ -26,9 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
   const [capacityReached, setCapacityReached] = useState(false);
 
   useEffect(() => {
+    let transitionTimer: NodeJS.Timeout | null = null;
+
     supabaseClient.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
@@ -38,8 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
+      // Set transitioning flag when auth state changes
+      setTransitioning(true);
+
+      // Clear any existing transition timer
+      if (transitionTimer) {
+        clearTimeout(transitionTimer);
+      }
+
       setSession(newSession);
       setUser(newSession?.user ?? null);
+
       // Clear signing out flag when session changes with a small delay
       // to ensure smooth transition without flashing
       if (!newSession) {
@@ -47,10 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSigningOut(false);
         }, 300);
       }
+
+      // Clear transitioning flag after a delay to prevent flashing
+      // This ensures the UI stabilizes before allowing redirects
+      transitionTimer = setTimeout(() => {
+        setTransitioning(false);
+      }, 500);
     });
 
     return () => {
       subscription.unsubscribe();
+      if (transitionTimer) {
+        clearTimeout(transitionTimer);
+      }
     };
   }, []);
 
@@ -66,11 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       initializing,
       signingOut,
+      transitioning,
       capacityReached,
       markCapacityReached: () => setCapacityReached(true),
       signOut,
     }),
-    [user, session, initializing, signingOut, capacityReached]
+    [user, session, initializing, signingOut, transitioning, capacityReached]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
