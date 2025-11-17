@@ -93,6 +93,11 @@ function GitHubPagesRedirect() {
   const location = useLocation();
 
   useEffect(() => {
+    // Don't process redirect param on /login - it's used for post-auth navigation
+    if (location.pathname === "/login") {
+      return;
+    }
+
     const params = new URLSearchParams(location.search);
     const redirectParam = params.get("redirect");
     const storedPath = sessionStorage.getItem("gh-pages-redirect");
