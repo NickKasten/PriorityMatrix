@@ -51,11 +51,31 @@ export function Layout({ children }: { children: ReactNode }) {
 export default function App() {
   return (
     <AuthProvider>
+      <LoadingOverlay />
       <AccountMenu />
       <GitHubPagesRedirect />
       <CapacityWatcher />
       <Outlet />
     </AuthProvider>
+  );
+}
+
+function LoadingOverlay() {
+  const { initializing, signingOut } = useAuth();
+
+  if (!initializing && !signingOut) {
+    return null;
+  }
+
+  const message = signingOut ? "Signing out..." : "Loading...";
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center">
+      <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mb-4"></div>
+      <p className="text-lg font-medium text-gray-700 dark:text-gray-200">
+        {message}
+      </p>
+    </div>
   );
 }
 

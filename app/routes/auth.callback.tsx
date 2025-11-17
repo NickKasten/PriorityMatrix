@@ -5,8 +5,13 @@ import { useAuth } from "~/lib/auth-context";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
-  const { markCapacityReached } = useAuth();
+  const { markCapacityReached, signingOut } = useAuth();
   const [status, setStatus] = useState("Verifying your magic link…");
+
+  // Don't process callback during sign out
+  if (signingOut) {
+    return null;
+  }
 
   useEffect(() => {
     const processCallback = async () => {

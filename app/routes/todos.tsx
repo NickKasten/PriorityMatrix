@@ -11,7 +11,7 @@ import { useAuth } from "~/lib/auth-context";
 type TaskStatus = "todo" | "scheduled" | "completed";
 
 export default function Todos() {
-  const { user, initializing } = useAuth();
+  const { user, initializing, signingOut } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,12 +35,12 @@ export default function Todos() {
   }, []);
 
   useEffect(() => {
-    if (!initializing && user) {
+    if (!initializing && !signingOut && user) {
       void fetchTodos();
-    } else if (!initializing && !user) {
+    } else if (!initializing && !signingOut && !user) {
       setLoading(false);
     }
-  }, [fetchTodos, initializing, user]);
+  }, [fetchTodos, initializing, signingOut, user]);
 
   const categorized = useMemo(() => {
     const todo = todos
@@ -114,16 +114,21 @@ export default function Todos() {
     setInfo("Task deleted.");
   };
 
-  if (initializing || loading) {
+  // Let global LoadingOverlay handle auth transitions
+  if (initializing || signingOut) {
+    return null;
+  }
+
+  if (!user) {
+    return <Navigate to="/login?redirect=/todos" replace />;
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
       </div>
     );
-  }
-
-  if (!user) {
-    return <Navigate to="/login?redirect=/todos" replace />;
   }
 
   return (

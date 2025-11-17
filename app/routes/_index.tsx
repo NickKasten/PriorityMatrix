@@ -2,14 +2,11 @@ import { Link } from "react-router";
 import { useAuth } from "~/lib/auth-context";
 
 export default function Index() {
-  const { user, initializing } = useAuth();
+  const { user, initializing, signingOut } = useAuth();
 
-  if (initializing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600"></div>
-      </div>
-    );
+  // Let global LoadingOverlay handle auth transitions
+  if (initializing || signingOut) {
+    return null;
   }
 
   return (

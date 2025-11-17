@@ -40,9 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      // Clear signing out flag when session changes
+      // Clear signing out flag when session changes with a small delay
+      // to ensure smooth transition without flashing
       if (!newSession) {
-        setSigningOut(false);
+        setTimeout(() => {
+          setSigningOut(false);
+        }, 300);
       }
     });
 
