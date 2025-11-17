@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { supabaseClient } from "~/lib/supabase.client";
 import { useAuth } from "~/lib/auth-context";
 
 export function AccountMenu() {
-  const { user, initializing } = useAuth();
+  const { user, initializing, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -27,7 +26,7 @@ export function AccountMenu() {
   }
 
   const handleSignOut = async () => {
-    await supabaseClient.auth.signOut();
+    await signOut();
     navigate("/login");
   };
 
