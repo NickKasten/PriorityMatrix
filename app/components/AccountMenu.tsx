@@ -3,12 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth-context";
 
 export function AccountMenu() {
-  const { user, initializing, signOut } = useAuth();
+  const { user, initializing, signingOut, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  if (initializing) {
+  // Hide during auth transitions to prevent flashing
+  if (initializing || signingOut) {
     return null;
   }
 
@@ -26,8 +27,12 @@ export function AccountMenu() {
   }
 
   const handleSignOut = async () => {
+    setOpen(false);
     await signOut();
-    navigate("/login");
+    // Delay navigation to allow smooth transition overlay
+    setTimeout(() => {
+      navigate("/login", { replace: true });
+    }, 350);
   };
 
   const displayName = user.email ?? "Account";
