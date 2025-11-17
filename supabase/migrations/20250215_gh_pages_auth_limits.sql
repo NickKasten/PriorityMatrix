@@ -7,9 +7,20 @@ begin;
 alter table public.todos
   add column if not exists user_id uuid default auth.uid();
 
-alter table public.todos
-  add constraint if not exists todos_user_id_fkey
-    foreign key (user_id) references auth.users(id) on delete cascade;
+-- Add foreign key constraint conditionally
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.table_constraints
+    where constraint_name = 'todos_user_id_fkey'
+      and table_name = 'todos'
+      and table_schema = 'public'
+  ) then
+    alter table public.todos
+      add constraint todos_user_id_fkey
+        foreign key (user_id) references auth.users(id) on delete cascade;
+  end if;
+end $$;
 
 -- 2. Track active users.
 create table if not exists public.user_profiles (
