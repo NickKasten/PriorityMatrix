@@ -7,8 +7,8 @@ import { sortByPriority } from "~/lib/utils";
 import { TodoColumn } from "~/components/TodoColumn";
 import type { Todo } from "~/types/todo";
 import { useAuth } from "~/lib/auth-context";
-
-type TaskStatus = "todo" | "scheduled" | "completed";
+import { getErrorMessage, ROUTES, TABLES, TASK_STATUS } from "~/lib/constants";
+import type { TaskStatus } from "~/lib/constants";
 
 export default function Todos() {
   const { user, initializing, signingOut } = useAuth();
@@ -21,12 +21,12 @@ export default function Todos() {
     setLoading(true);
     setInfo(null);
     const { data, error: fetchError } = await supabaseClient
-      .from("todos")
+      .from(TABLES.TODOS)
       .select("*")
       .order("created_at", { ascending: false });
 
     if (fetchError) {
-      setError(fetchError.message);
+      setError(getErrorMessage(fetchError.message));
     } else {
       setError(null);
       setTodos(data ?? []);
@@ -44,10 +44,10 @@ export default function Todos() {
 
   const categorized = useMemo(() => {
     const todo = todos
-      .filter((task) => task.status === "todo")
+      .filter((task) => task.status === TASK_STATUS.TODO)
       .sort(sortByPriority);
-    const scheduled = todos.filter((task) => task.status === "scheduled");
-    const completed = todos.filter((task) => task.status === "completed");
+    const scheduled = todos.filter((task) => task.status === TASK_STATUS.SCHEDULED);
+    const completed = todos.filter((task) => task.status === TASK_STATUS.COMPLETED);
 
     return { todo, scheduled, completed };
   }, [todos]);
@@ -71,7 +71,7 @@ export default function Todos() {
             ...task,
             status: newStatus,
             completed_at:
-              newStatus === "completed"
+              newStatus === TASK_STATUS.COMPLETED
                 ? new Date().toISOString()
                 : task.completed_at,
           }
@@ -82,31 +82,31 @@ export default function Todos() {
     setInfo(null);
 
     const updateData: Partial<Todo> = { status: newStatus };
-    if (newStatus === "completed") {
+    if (newStatus === TASK_STATUS.COMPLETED) {
       updateData.completed_at = new Date().toISOString();
     } else {
       updateData.completed_at = null;
     }
 
     const { error: updateError } = await supabaseClient
-      .from("todos")
+      .from(TABLES.TODOS)
       .update(updateData)
       .eq("id", taskId);
 
     if (updateError) {
-      setError(updateError.message);
+      setError(getErrorMessage(updateError.message));
       void fetchTodos();
     }
   };
 
   const handleDelete = async (taskId: string) => {
     const { error: deleteError } = await supabaseClient
-      .from("todos")
+      .from(TABLES.TODOS)
       .delete()
       .eq("id", taskId);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError(getErrorMessage(deleteError.message));
       return;
     }
 
@@ -120,7 +120,7 @@ export default function Todos() {
   }
 
   if (!user) {
-    return <Navigate to="/login?redirect=/todos" replace />;
+    return <Navigate to={`${ROUTES.LOGIN}?redirect=${ROUTES.TODOS}`} replace />;
   }
 
   if (loading) {
@@ -132,9 +132,9 @@ export default function Todos() {
   }
 
   return (
-    <div className="min-h-screen p-8 pt-20">
+    <div className="min-h-screen p-8 pt-20 bg-gray-100 dark:bg-gray-900">
       <Link
-        to="/"
+        to={ROUTES.HOME}
         className="fixed top-4 left-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
       >
         ← Back to Home

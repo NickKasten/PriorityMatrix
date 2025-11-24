@@ -66,11 +66,11 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
 
         <button
           onClick={handleDelete}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all bg-error-500 text-white rounded-md w-8 h-8 flex items-center justify-center hover:bg-error-600 hover:scale-110 shadow-sm"
-          title="Delete task"
-          aria-label="Delete task"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all bg-error-500 text-white rounded-md w-8 h-8 flex items-center justify-center hover:bg-error-600 hover:scale-110 shadow-sm focus:outline-none focus:ring-2 focus:ring-error-500 focus:ring-offset-2"
+          title={`Delete task: ${task.title}`}
+          aria-label={`Delete task: ${task.title}`}
         >
-          <span className="text-xl leading-none font-bold">×</span>
+          <span className="text-xl leading-none font-bold" aria-hidden="true">×</span>
         </button>
       </div>
 
@@ -78,15 +78,19 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={cancelDelete}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={`delete-modal-title-${task.id}`}
+          aria-describedby={`delete-modal-desc-${task.id}`}
         >
           <div
             className="bg-white dark:bg-gray-800 rounded-lg shadow-hard max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            <h3 id={`delete-modal-title-${task.id}`} className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               Delete Task
             </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-2">
+            <p id={`delete-modal-desc-${task.id}`} className="text-gray-700 dark:text-gray-300 mb-2">
               Are you sure you want to delete this task?
             </p>
             <p className="text-gray-900 dark:text-gray-100 font-semibold mb-4 p-3 bg-gray-100 dark:bg-gray-700 rounded">
