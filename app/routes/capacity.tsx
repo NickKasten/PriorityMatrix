@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "~/lib/auth-context";
+import {
+  LIMIT_MAX_USERS,
+  ROUTES,
+  STORAGE_KEY_CAPACITY_ERROR,
+} from "~/lib/constants";
 
 export default function CapacityReached() {
   const { markCapacityReached } = useAuth();
@@ -10,10 +15,10 @@ export default function CapacityReached() {
 
   useEffect(() => {
     markCapacityReached();
-    const stored = sessionStorage.getItem("capacity-error");
+    const stored = sessionStorage.getItem(STORAGE_KEY_CAPACITY_ERROR);
     if (stored) {
       setMessage(stored);
-      sessionStorage.removeItem("capacity-error");
+      sessionStorage.removeItem(STORAGE_KEY_CAPACITY_ERROR);
     }
   }, [markCapacityReached]);
 
@@ -25,7 +30,7 @@ export default function CapacityReached() {
           {message}
         </p>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          We maintain a strict 100 user limit to guarantee reliability for our
+          We maintain a strict {LIMIT_MAX_USERS} user limit to guarantee reliability for our
           existing users. Please check back later or contact support if you
           believe this is an error.
         </p>
@@ -37,7 +42,7 @@ export default function CapacityReached() {
             Contact Support
           </a>
           <Link
-            to="/login"
+            to={ROUTES.LOGIN}
             className="px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
           >
             Try Again Later

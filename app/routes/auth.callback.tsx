@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { supabaseClient } from "~/lib/supabase.client";
 import { useAuth } from "~/lib/auth-context";
+import {
+  getErrorMessage,
+  ROUTES,
+  RPC_FUNCTIONS,
+  STORAGE_KEY_CAPACITY_ERROR,
+  STORAGE_KEY_POST_AUTH_REDIRECT,
+} from "~/lib/constants";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -26,7 +33,7 @@ export default function AuthCallback() {
         await supabaseClient.auth.exchangeCodeForSession(hash);
 
       if (exchangeError) {
-        setStatus(exchangeError.message);
+        setStatus(getErrorMessage(exchangeError.message));
         return;
       }
 
@@ -45,7 +52,7 @@ export default function AuthCallback() {
       }
 
       const { error: capacityError } = await supabaseClient.rpc(
-        "ensure_user_slot",
+        RPC_FUNCTIONS.ENSURE_USER_SLOT,
         {
           user_uuid: userData.user.id,
           user_email: userData.user.email,
@@ -55,17 +62,17 @@ export default function AuthCallback() {
       if (capacityError) {
         markCapacityReached();
         sessionStorage.setItem(
-          "capacity-error",
-          capacityError.message || "User capacity reached."
+          STORAGE_KEY_CAPACITY_ERROR,
+          getErrorMessage(capacityError.message)
         );
         await supabaseClient.auth.signOut();
-        navigate("/capacity", { replace: true });
+        navigate(ROUTES.CAPACITY, { replace: true });
         return;
       }
 
       const target =
-        sessionStorage.getItem("post-auth-redirect") || "/todos";
-      sessionStorage.removeItem("post-auth-redirect");
+        sessionStorage.getItem(STORAGE_KEY_POST_AUTH_REDIRECT) || ROUTES.TODOS;
+      sessionStorage.removeItem(STORAGE_KEY_POST_AUTH_REDIRECT);
       navigate(target, { replace: true });
     };
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useAuth } from "~/lib/auth-context";
+import { ROUTES } from "~/lib/constants";
 
 export function AccountMenu() {
   const { user, initializing, signingOut, signOut } = useAuth();
@@ -15,10 +16,10 @@ export function AccountMenu() {
 
   if (!user) {
     const redirectPath =
-      location.pathname === "/" ? "/todos" : location.pathname + location.search;
+      location.pathname === ROUTES.HOME ? ROUTES.TODOS : location.pathname + location.search;
     return (
       <Link
-        to={`/login?redirect=${encodeURIComponent(redirectPath)}`}
+        to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectPath)}`}
         className="fixed top-4 right-20 z-50 px-4 py-2 bg-primary-600 text-white rounded-lg shadow-md hover:bg-primary-700 transition"
       >
         Sign In
@@ -31,7 +32,7 @@ export function AccountMenu() {
     await signOut();
     // Delay navigation to allow smooth transition overlay
     setTimeout(() => {
-      navigate("/login", { replace: true });
+      navigate(ROUTES.LOGIN, { replace: true });
     }, 350);
   };
 
@@ -55,14 +56,14 @@ export function AccountMenu() {
       {open && (
         <div className="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-hard py-2 w-56">
           <Link
-            to="/todos"
+            to={ROUTES.TODOS}
             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setOpen(false)}
           >
             My Tasks
           </Link>
           <Link
-            to="/add-todo"
+            to={ROUTES.ADD_TODO}
             className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setOpen(false)}
           >

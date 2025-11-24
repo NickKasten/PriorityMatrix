@@ -3,6 +3,12 @@ import type { FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { supabaseClient } from "~/lib/supabase.client";
 import { useAuth } from "~/lib/auth-context";
+import {
+  getErrorMessage,
+  ROUTES,
+  RPC_FUNCTIONS,
+  STORAGE_KEY_POST_AUTH_REDIRECT,
+} from "~/lib/constants";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,7 +24,7 @@ export default function Login() {
   }
 
   if (user) {
-    const redirect = searchParams.get("redirect") ?? "/todos";
+    const redirect = searchParams.get("redirect") ?? ROUTES.TODOS;
     return <Navigate to={redirect} replace />;
   }
 
@@ -34,12 +40,12 @@ export default function Login() {
     }
 
     const { data: capacityRaw, error: capacityError } =
-      await supabaseClient.rpc("check_user_capacity", {
+      await supabaseClient.rpc(RPC_FUNCTIONS.CHECK_USER_CAPACITY, {
         email_input: trimmedEmail,
       });
 
     if (capacityError) {
-      setError(capacityError.message);
+      setError(getErrorMessage(capacityError.message));
       return;
     }
 
@@ -52,7 +58,7 @@ export default function Login() {
       !capacityData?.is_existing_user
     ) {
       markCapacityReached();
-      navigate("/capacity");
+      navigate(ROUTES.CAPACITY);
       return;
     }
 
@@ -68,12 +74,12 @@ export default function Login() {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      setError(getErrorMessage(signInError.message));
       return;
     }
 
-    const redirect = searchParams.get("redirect") ?? "/todos";
-    sessionStorage.setItem("post-auth-redirect", redirect);
+    const redirect = searchParams.get("redirect") ?? ROUTES.TODOS;
+    sessionStorage.setItem(STORAGE_KEY_POST_AUTH_REDIRECT, redirect);
     setStatus("Success! Check your email for a login link.");
   };
 

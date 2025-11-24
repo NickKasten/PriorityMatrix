@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, KeyboardEvent } from 'react';
 
 interface Task {
   id: string;
@@ -28,6 +28,23 @@ export function ImportanceUrgencyGraph({ onPositionSelect, existingTasks, select
     onPositionSelect({ x: Math.round(x), y: Math.round(y) });
   };
 
+  const handleKeyDown = (e: KeyboardEvent<SVGSVGElement>) => {
+    // Allow keyboard navigation with arrow keys
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      const step = e.shiftKey ? 10 : 5;
+      let newX = selectedPosition.x;
+      let newY = selectedPosition.y;
+
+      if (e.key === 'ArrowUp') newY = Math.min(100, newY + step);
+      if (e.key === 'ArrowDown') newY = Math.max(0, newY - step);
+      if (e.key === 'ArrowRight') newX = Math.min(100, newX + step);
+      if (e.key === 'ArrowLeft') newX = Math.max(0, newX - step);
+
+      onPositionSelect({ x: newX, y: newY });
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="flex items-center justify-center gap-4" style={{ marginRight: '84px' }}>
@@ -42,7 +59,11 @@ export function ImportanceUrgencyGraph({ onPositionSelect, existingTasks, select
           width={size}
           height={size}
           onClick={handleClick}
-          className="border-2 border-gray-300 dark:border-gray-600 cursor-crosshair bg-white dark:bg-gray-800"
+          onKeyDown={handleKeyDown}
+          className="border-2 border-gray-300 dark:border-gray-600 cursor-crosshair bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          role="application"
+          aria-label={`Eisenhower Matrix positioning graph. Click or use arrow keys to position your task. Current position: Urgency ${selectedPosition.x}, Importance ${selectedPosition.y}.`}
+          tabIndex={0}
         >
         {/* Grid lines */}
         <line x1={size/2} y1="0" x2={size/2} y2={size} stroke="#d1d5db" strokeWidth="1" className="dark:stroke-gray-600" />
@@ -153,9 +174,13 @@ export function ImportanceUrgencyGraph({ onPositionSelect, existingTasks, select
         </span>
       </div>
 
-      <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+      <div className="mt-4 text-sm text-gray-600 dark:text-gray-400" aria-live="polite">
         Position: Urgency {selectedPosition.x}, Importance {selectedPosition.y}
       </div>
+
+      <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
+        Tip: Use arrow keys to fine-tune position (hold Shift for larger steps)
+      </p>
     </div>
   );
 }

@@ -9,6 +9,13 @@ import {
 import { ImportanceUrgencyGraph } from "~/components/ImportanceUrgencyGraph";
 import { supabaseClient } from "~/lib/supabase.client";
 import { useAuth } from "~/lib/auth-context";
+import {
+  getErrorMessage,
+  LIMIT_MAX_ACTIVE_TASKS,
+  ROUTES,
+  TABLES,
+  TASK_STATUS,
+} from "~/lib/constants";
 
 interface LocationState {
   title: string;
@@ -42,8 +49,8 @@ export default function PositionTodo() {
     if (!initializing && !user) {
       const redirectTarget =
         searchParams.get("redirect") ??
-        `/add-todo/position${window.location.search}${window.location.hash}`;
-      navigate(`/login?redirect=${encodeURIComponent(redirectTarget)}`, {
+        `${ROUTES.ADD_TODO_POSITION}${window.location.search}${window.location.hash}`;
+      navigate(`${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectTarget)}`, {
         replace: true,
       });
     }
@@ -51,7 +58,7 @@ export default function PositionTodo() {
 
   useEffect(() => {
     if (!state?.title) {
-      navigate("/add-todo", { replace: true });
+      navigate(ROUTES.ADD_TODO, { replace: true });
     }
   }, [navigate, state]);
 
@@ -59,13 +66,13 @@ export default function PositionTodo() {
     if (!user) return;
     const fetchExisting = async () => {
       const { data, error: fetchError } = await supabaseClient
-        .from("todos")
+        .from(TABLES.TODOS)
         .select("id, title, importance, urgency")
-        .neq("status", "completed")
+        .neq("status", TASK_STATUS.COMPLETED)
         .order("created_at", { ascending: false });
 
       if (fetchError) {
-        setError(fetchError.message);
+        setError(getErrorMessage(fetchError.message));
       } else {
         setExistingTasks(data ?? []);
       }
@@ -79,39 +86,29 @@ export default function PositionTodo() {
   const handleSubmit = async () => {
     if (!title) return;
     if (!user) {
-      navigate("/login?redirect=/add-todo/position", { replace: true });
+      navigate(`${ROUTES.LOGIN}?redirect=${ROUTES.ADD_TODO_POSITION}`, { replace: true });
       return;
     }
     setSaving(true);
     setError(null);
 
-    const { error: insertError } = await supabaseClient.from("todos").insert({
+    const { error: insertError } = await supabaseClient.from(TABLES.TODOS).insert({
       title,
       due_date: dueDate || null,
       importance: position.y,
       urgency: position.x,
-      status: "todo",
+      status: TASK_STATUS.TODO,
       position: 0,
       user_id: user.id,
     });
 
     if (insertError) {
-      if (insertError.message.includes("TASK_RATE_LIMIT")) {
-        setError(
-          "Easy there! You can only add one task per second. Please try again."
-        );
-      } else if (insertError.message.includes("TASK_CAP_REACHED")) {
-        setError(
-          "You already have 30 active tasks. Complete or delete one before adding another."
-        );
-      } else {
-        setError(insertError.message);
-      }
+      setError(getErrorMessage(insertError.message));
       setSaving(false);
       return;
     }
 
-    navigate("/todos", { replace: true });
+    navigate(ROUTES.TODOS, { replace: true });
   };
 
   if (initializing) {
@@ -123,7 +120,7 @@ export default function PositionTodo() {
   }
 
   if (!user) {
-    return <Navigate to="/login?redirect=/add-todo/position" replace />;
+    return <Navigate to={`${ROUTES.LOGIN}?redirect=${ROUTES.ADD_TODO_POSITION}`} replace />;
   }
 
   if (!title) {
@@ -131,9 +128,9 @@ export default function PositionTodo() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 pt-20">
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 pt-20 bg-gray-100 dark:bg-gray-900">
       <Link
-        to="/add-todo"
+        to={ROUTES.ADD_TODO}
         className="fixed top-4 left-4 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
       >
         ← Back
@@ -164,9 +161,9 @@ export default function PositionTodo() {
         </button>
       </div>
 
-      {pendingTaskCount >= 30 && (
+      {pendingTaskCount >= LIMIT_MAX_ACTIVE_TASKS && (
         <div className="mb-6 max-w-lg w-full bg-warning-100 text-warning-600 px-4 py-3 rounded-lg text-center">
-          You have 30 active tasks. Complete or remove a task before adding a
+          You have {LIMIT_MAX_ACTIVE_TASKS} active tasks. Complete or remove a task before adding a
           new one.
         </div>
       )}
@@ -187,7 +184,7 @@ export default function PositionTodo() {
       <button
         type="button"
         onClick={handleSubmit}
-        disabled={saving || pendingTaskCount >= 30}
+        disabled={saving || pendingTaskCount >= LIMIT_MAX_ACTIVE_TASKS}
         className="mt-8 px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-70 disabled:cursor-not-allowed transition"
       >
         {saving ? "Saving…" : "Confirm Position"}

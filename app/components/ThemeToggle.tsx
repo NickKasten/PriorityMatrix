@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { STORAGE_KEY_THEME } from '~/lib/constants';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -7,7 +8,7 @@ export function ThemeToggle() {
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) as 'light' | 'dark' | null;
 
     if (savedTheme) {
       setTheme(savedTheme);
@@ -24,7 +25,7 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem(STORAGE_KEY_THEME, newTheme);
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 

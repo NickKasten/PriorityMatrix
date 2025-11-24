@@ -15,6 +15,7 @@ import "./app.css";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { AccountMenu } from "./components/AccountMenu";
 import { AuthProvider, useAuth } from "./lib/auth-context";
+import { ROUTES, STORAGE_KEY_GH_PAGES_REDIRECT } from "./lib/constants";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -115,12 +116,12 @@ function GitHubPagesRedirect() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const redirectParam = params.get("redirect");
-    const storedPath = sessionStorage.getItem("gh-pages-redirect");
+    const storedPath = sessionStorage.getItem(STORAGE_KEY_GH_PAGES_REDIRECT);
 
     if (redirectParam) {
       params.delete("redirect");
       const remaining = params.toString();
-      sessionStorage.removeItem("gh-pages-redirect");
+      sessionStorage.removeItem(STORAGE_KEY_GH_PAGES_REDIRECT);
       navigate(
         `${redirectParam}${
           remaining ? `?${remaining}` : ""
@@ -130,8 +131,8 @@ function GitHubPagesRedirect() {
       return;
     }
 
-    if (storedPath && location.pathname === "/") {
-      sessionStorage.removeItem("gh-pages-redirect");
+    if (storedPath && location.pathname === ROUTES.HOME) {
+      sessionStorage.removeItem(STORAGE_KEY_GH_PAGES_REDIRECT);
       navigate(storedPath, { replace: true });
     }
   }, [location.hash, location.pathname, location.search, navigate]);
@@ -145,8 +146,8 @@ function CapacityWatcher() {
   const { capacityReached } = useAuth();
 
   useEffect(() => {
-    if (capacityReached && location.pathname !== "/capacity") {
-      navigate("/capacity", { replace: true });
+    if (capacityReached && location.pathname !== ROUTES.CAPACITY) {
+      navigate(ROUTES.CAPACITY, { replace: true });
     }
   }, [capacityReached, location.pathname, navigate]);
 
