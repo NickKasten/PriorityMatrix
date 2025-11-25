@@ -118,7 +118,10 @@ function GitHubPagesRedirect() {
     const redirectParam = params.get("redirect");
     const storedPath = sessionStorage.getItem(STORAGE_KEY_GH_PAGES_REDIRECT);
 
-    if (redirectParam) {
+    // Only process redirect param if sessionStorage flag is also set.
+    // This ensures we only handle actual GitHub Pages 404 redirects
+    // and not login redirect params (which also use ?redirect=).
+    if (redirectParam && storedPath) {
       params.delete("redirect");
       const remaining = params.toString();
       sessionStorage.removeItem(STORAGE_KEY_GH_PAGES_REDIRECT);
@@ -131,6 +134,8 @@ function GitHubPagesRedirect() {
       return;
     }
 
+    // Handle case where sessionStorage is set but no redirect param
+    // (e.g., if user navigated away and back)
     if (storedPath && location.pathname === ROUTES.HOME) {
       sessionStorage.removeItem(STORAGE_KEY_GH_PAGES_REDIRECT);
       navigate(storedPath, { replace: true });
